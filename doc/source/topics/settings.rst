@@ -204,7 +204,8 @@ If Keystone has been configured to use LDAP as the auth backend then set
 ``OPENSTACK_HYPERVISOR_FEATURES``
 ---------------------------------
 
-Default: ``{'can_set_mount_point': True, 'can_encrypt_volumes': False}``
+Default: ``{'can_set_mount_point': True, 'can_encrypt_volumes': False,
+'can_set_password': True}``
 
 A dictionary containing settings which can be used to identify the
 capabilities of the hypervisor for Nova.
@@ -216,6 +217,9 @@ remove the option to set the mount point from the UI.
 In the Havana release, there will be a feature for encrypted volumes
 which will be controlled by the ``can_encrypt_volumes``. Setting it to ``True``
 in the Grizzly release will have no effect.
+
+Setting ``can_set_password`` to ``False`` will remove the option to set
+an administrator password when launching or rebuilding an instance.
 
 ``OPENSTACK_NEUTRON_NETWORK``
 -----------------------------
