@@ -58,7 +58,6 @@ horizon.instances = {
                              .replace(/"/g, '&quot;')
                              .replace(/'/g, '&#x27;')
                              .replace(/\//g, '&#x2F;');
-
       var network_property = {
         name:name,
         id:$input.attr("id"),

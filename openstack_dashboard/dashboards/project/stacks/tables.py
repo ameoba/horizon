@@ -98,6 +98,11 @@ def get_resource_url(obj):
     return urlresolvers.reverse('horizon:project:stacks:resource',
                                 args=(obj.stack_id, obj.resource_name))
 
+def get_resource_url(obj):
+    return urlresolvers.reverse('horizon:project:stacks:resource',
+                                args=(obj.stack_id, obj.resource_name))
+
+
 class EventsTable(tables.DataTable):
 
     logical_resource = tables.Column('resource_name',

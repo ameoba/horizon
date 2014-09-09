@@ -75,7 +75,7 @@ class StackEventsTab(tabs.Tab):
             stack_identifier = '%s/%s' % (stack.stack_name, stack.id)
             events = api.heat.events_list(self.request, stack_identifier)
             LOG.debug('got events %s' % events)
-            # The stack id is needed to generate the resource URL. 
+            # The stack id is needed to generate the resource URL.
             for event in events:
                 event.stack_id = stack.id
         except Exception:
@@ -98,9 +98,9 @@ class StackResourcesTab(tabs.Tab):
             stack_identifier = '%s/%s' % (stack.stack_name, stack.id)
             resources = api.heat.resources_list(self.request, stack_identifier)
             LOG.debug('got resources %s' % resources)
-            # The stack id is needed to generate the resource URL. 
-            for event in events:
-                event.stack_id = stack.id
+            # The stack id is needed to generate the resource URL.
+            for r in resources:
+                r.stack_id = stack.id
         except Exception:
             resources = []
             messages.error(request, _(
