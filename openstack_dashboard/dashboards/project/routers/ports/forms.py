@@ -16,6 +16,7 @@
 
 import logging
 
+from django.conf import settings
 from django.core.urlresolvers import reverse  # noqa
 from django.utils.translation import ugettext_lazy as _  # noqa
 
@@ -29,12 +30,18 @@ LOG = logging.getLogger(__name__)
 
 
 class AddInterface(forms.SelfHandlingForm):
+    _ccs_enable_ipv6 = getattr(settings, 'OPENSTACK_NEUTRON_NETWORK', {}).get('enable_ipv6', False)
+    if _ccs_enable_ipv6:
+        _ip_version_fields = fields.IPv4 | fields.IPv6
+    else:
+        _ip_version_fields = fields.IPv4
+
     subnet_id = forms.ChoiceField(label=_("Subnet"))
     ip_address = fields.IPField(
         label=_("IP Address (optional)"), required=False, initial="",
         help_text=_("You can specify an IP address of the interface "
                     "created if you want (e.g. 192.168.0.254)."),
-        version=fields.IPv4 | fields.IPv6, mask=False)
+        version=_ip_version_fields, mask=False)
     router_name = forms.CharField(label=_("Router Name"),
                                   widget=forms.TextInput(
                                       attrs={'readonly': 'readonly'}))

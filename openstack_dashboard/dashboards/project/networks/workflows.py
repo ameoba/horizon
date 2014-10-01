@@ -18,6 +18,7 @@
 import logging
 import netaddr
 
+from django.conf import settings
 from django.core.urlresolvers import reverse  # noqa
 from django.utils.translation import ugettext_lazy as _  # noqa
 
@@ -82,6 +83,14 @@ class CreateNetworkInfo(workflows.Step):
 
 
 class CreateSubnetInfoAction(workflows.Action):
+    _ccs_enable_ipv6 = getattr(settings, 'OPENSTACK_NEUTRON_NETWORK', {}).get('enable_ipv6', False)
+    if _ccs_enable_ipv6:
+        ip_version_choices = [(4, 'IPv4'), (6, 'IPv6')]
+        ip_version_fields = fields.IPv4 | fields.IPv6
+    else:
+        ip_version_choices = [(4, 'IPv4')]
+        ip_version_fields = fields.IPv4
+    
     with_subnet = forms.BooleanField(label=_("Create Subnet"),
                                      initial=True, required=False)
     subnet_name = forms.CharField(max_length=255,
@@ -92,9 +101,9 @@ class CreateSubnetInfoAction(workflows.Action):
                           initial="",
                           help_text=_("Network address in CIDR format "
                                       "(e.g. 192.168.0.0/24)"),
-                          version=fields.IPv4 | fields.IPv6,
+                          version=ip_version_fields,
                           mask=True)
-    ip_version = forms.ChoiceField(choices=[(4, 'IPv4'), (6, 'IPv6')],
+    ip_version = forms.ChoiceField(choices=ip_version_choices,
                                    label=_("IP Version"))
     gateway_ip = fields.IPField(
         label=_("Gateway IP"),
@@ -107,7 +116,7 @@ class CreateSubnetInfoAction(workflows.Action):
                     "If you use the default, leave blank. "
                     "If you want to use no gateway, "
                     "check 'Disable Gateway' below."),
-        version=fields.IPv4 | fields.IPv6,
+        version=ip_version_fields,
         mask=False)
     no_gateway = forms.BooleanField(label=_("Disable Gateway"),
                                     initial=False, required=False)

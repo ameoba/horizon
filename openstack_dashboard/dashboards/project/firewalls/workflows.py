@@ -15,6 +15,7 @@
 #
 # @author: KC Wang, Big Switch Networks
 
+from django.conf import settings
 from django.utils.translation import ugettext_lazy as _  # noqa
 
 from horizon import exceptions
@@ -29,6 +30,12 @@ port_validator = validators.validate_port_or_colon_separated_port_range
 
 
 class AddRuleAction(workflows.Action):
+    _ccs_enable_ipv6 = getattr(settings, 'OPENSTACK_NEUTRON_NETWORK', {}).get('enable_ipv6', False)
+    if _ccs_enable_ipv6:
+        _ip_version_fields = fields.IPv4 | fields.IPv6
+    else:
+        _ip_version_fields = fields.IPv4
+
     name = forms.CharField(
         max_length=80,
         label=_("Name"),
@@ -49,11 +56,11 @@ class AddRuleAction(workflows.Action):
                  ('deny', _('DENY'))],)
     source_ip_address = fields.IPField(
         label=_("Source IP Address/Subnet"),
-        version=fields.IPv4 | fields.IPv6,
+        version=_ip_version_fields,
         required=False, mask=True)
     destination_ip_address = fields.IPField(
         label=_("Destination IP Address/Subnet"),
-        version=fields.IPv4 | fields.IPv6,
+        version=_ip_version_fields,
         required=False, mask=True)
     source_port = forms.CharField(
         max_length=80,

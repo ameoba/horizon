@@ -17,6 +17,7 @@
 
 import logging
 
+from django.conf import settings
 from django.core.urlresolvers import reverse  # noqa
 from django.utils.translation import ugettext_lazy as _  # noqa
 
@@ -34,6 +35,12 @@ LOG = logging.getLogger(__name__)
 
 
 class UpdateRule(forms.SelfHandlingForm):
+    _ccs_enable_ipv6 = getattr(settings, 'OPENSTACK_NEUTRON_NETWORK', {}).get('enable_ipv6', False)
+    if _ccs_enable_ipv6:
+        _ip_version_fields = fields.IPv4 | fields.IPv6
+    else:
+        _ip_version_fields = fields.IPv4
+
     name = forms.CharField(max_length=80, label=_("Name"), required=False)
     description = forms.CharField(
         required=False,
@@ -46,12 +53,12 @@ class UpdateRule(forms.SelfHandlingForm):
         help_text=_('Action for the firewall rule'))
     source_ip_address = fields.IPField(
         label=_("Source IP Address/Subnet"),
-        version=fields.IPv4 | fields.IPv6,
+        version=_ip_version_fields,
         required=False, mask=True,
         help_text=_('Source IP address or subnet'))
     destination_ip_address = fields.IPField(
         label=_('Destination IP Address/Subnet'),
-        version=fields.IPv4 | fields.IPv6,
+        version=_ip_version_fields,
         required=False, mask=True,
         help_text=_('Destination IP address or subnet'))
     source_port = forms.CharField(

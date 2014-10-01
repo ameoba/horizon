@@ -202,12 +202,20 @@ class AddRule(forms.SelfHandlingForm):
                                    'class': 'switchable',
                                    'data-slug': 'remote'}))
 
+    _ccs_enable_ipv6 = getattr(settings, 'OPENSTACK_NEUTRON_NETWORK', {}).get('enable_ipv6', False)
+    if _ccs_enable_ipv6:
+        _ip_version_choices = [('IPv4', _('IPv4')), ('IPv6', _('IPv6'))]
+        _ip_version_fields = fields.IPv4 | fields.IPv6
+    else:
+        _ip_version_choices = [('IPv4', _('IPv4'))]
+        _ip_version_fields = fields.IPv4
+        
     cidr = fields.IPField(label=_("CIDR"),
                           required=False,
                           initial="0.0.0.0/0",
                           help_text=_("Classless Inter-Domain Routing "
                                       "(e.g. 192.168.0.0/24)"),
-                          version=fields.IPv4 | fields.IPv6,
+                          version=_ip_version_fields,
                           mask=True,
                           widget=forms.TextInput(
                               attrs={'class': 'switched',
@@ -225,8 +233,7 @@ class AddRule(forms.SelfHandlingForm):
     # When source group, ethertype needs to be specified explicitly.
     ethertype = forms.ChoiceField(label=_('Ether Type'),
                                   required=False,
-                                  choices=[('IPv4', _('IPv4')),
-                                           ('IPv6', _('IPv6'))],
+                                  choices=_ip_version_choices,
                                   widget=forms.Select(attrs={
                                       'class': 'switched',
                                       'data-slug': 'ethertype',
