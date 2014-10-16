@@ -22,6 +22,7 @@ import uuid
 
 from django.core.urlresolvers import reverse  # noqa
 from django import http
+from django.test import utils as test_utils
 from django.utils.datastructures import SortedDict  # noqa
 from django.utils.http import urlencode  # noqa
 
@@ -978,7 +979,8 @@ class InstanceTests(test.TestCase):
                                       'profile_list',),
                         api.glance: ('image_list_detailed',)})
     def test_launch_instance_get(self,
-                                 block_device_mapping_v2=True):
+                                 block_device_mapping_v2=True,
+                                 expect_password_fields=True):
         image = self.images.first()
 
         api.nova.extension_supported('BlockDeviceMappingV2Boot',
@@ -1048,8 +1050,19 @@ class InstanceTests(test.TestCase):
         else:
             self.assertNotContains(res, boot_from_image_field_label)
 
+        password_field_label = 'Admin Pass'
+        if expect_password_fields:
+            self.assertContains(res, password_field_label)
+        else:
+            self.assertNotContains(res, password_field_label)
+
     def test_launch_instance_get_no_block_device_mapping_v2_supported(self):
         self.test_launch_instance_get(block_device_mapping_v2=False)
+
+    @test_utils.override_settings(
+        OPENSTACK_HYPERVISOR_FEATURES={'can_set_password': False})
+    def test_launch_instance_get_without_password(self):
+        self.test_launch_instance_get(expect_password_fields=False)
 
     @test.create_stubs({api.glance: ('image_list_detailed',),
                         api.neutron: ('network_list',
@@ -2033,7 +2046,7 @@ class InstanceTests(test.TestCase):
         self.assertRedirectsNoFollow(res, INDEX_URL)
 
     @test.create_stubs({api.glance: ('image_list_detailed',)})
-    def test_rebuild_instance_get(self):
+    def test_rebuild_instance_get(self, expect_password_fields=True):
         server = self.servers.first()
         api.glance.image_list_detailed(IsA(http.HttpRequest),
                                        filters={'is_public': True,
@@ -2050,6 +2063,17 @@ class InstanceTests(test.TestCase):
         res = self.client.get(url)
 
         self.assertTemplateUsed(res, 'project/instances/rebuild.html')
+
+        password_field_label = 'Rebuild Password'
+        if expect_password_fields:
+            self.assertContains(res, password_field_label)
+        else:
+            self.assertNotContains(res, password_field_label)
+
+    @test_utils.override_settings(
+        OPENSTACK_HYPERVISOR_FEATURES={'can_set_password': False})
+    def test_rebuild_instance_get_without_set_password(self):
+        self.test_rebuild_instance_get(expect_password_fields=False)
 
     def _instance_rebuild_post(self, server_id, image_id,
                                password=None, confirm_password=None):
