@@ -151,6 +151,7 @@ OPENSTACK_KEYSTONE_BACKEND = {
 
 OPENSTACK_HYPERVISOR_FEATURES = {
     'can_set_mount_point': True,
+    'can_set_password': False,
 }
 
 # The OPENSTACK_NEUTRON_NETWORK settings can be used to enable optional
@@ -161,6 +162,7 @@ OPENSTACK_NEUTRON_NETWORK = {
     'enable_firewall': False,
     'enable_quotas': True,
     'enable_vpn': False,
+    'enable_ipv6': True,
     # The profile_support option is used to detect if an external router can be
     # configured via the dashboard. When using specific plugins the
     # profile_support can be turned on if needed.
